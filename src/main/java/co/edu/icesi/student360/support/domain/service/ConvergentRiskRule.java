@@ -80,7 +80,8 @@ public class ConvergentRiskRule {
             financial.map(FinancialSnapshot::daysOverdue).orElse(null),
             financial.map(FinancialSnapshot::financialHold).orElse(null),
             List.copyOf(fired),
-            List.copyOf(unavailableSources));
+            List.copyOf(unavailableSources),
+            null);
 
     if (!lowWellbeing) {
       return new RiskEvaluation(signals, Optional.empty(), Optional.empty());

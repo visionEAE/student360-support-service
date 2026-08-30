@@ -16,6 +16,8 @@ import org.hibernate.type.SqlTypes;
 @Table(name = "alert", schema = "support")
 public class Alert {
 
+  public static final String MANUAL_SOURCE = "ADVISOR";
+
   @Id private UUID id;
 
   @Column(name = "student_reference", nullable = false)
@@ -39,6 +41,12 @@ public class Alert {
   @Column(nullable = false)
   private AlertStatus status;
 
+  @Column(name = "created_by")
+  private String createdBy;
+
+  @Column(name = "updated_at", nullable = false)
+  private Instant updatedAt;
+
   protected Alert() {}
 
   public static Alert generate(
@@ -54,14 +62,45 @@ public class Alert {
     alert.source = source;
     alert.triggeringSignals = signals;
     alert.generatedAt = now;
+    alert.updatedAt = now;
     alert.status = AlertStatus.OPEN;
     return alert;
   }
 
-  public void acknowledge() {
+  /** An alert raised by an advisor's judgement rather than by the rule. */
+  public static Alert raisedBy(
+      String advisorReference,
+      String studentReference,
+      Severity severity,
+      TriggeringSignals signals,
+      Instant now) {
+    Alert alert = generate(studentReference, severity, MANUAL_SOURCE, signals, now);
+    alert.createdBy = advisorReference;
+    return alert;
+  }
+
+  public void acknowledge(Instant now) {
     if (status == AlertStatus.OPEN) {
       status = AlertStatus.ACKNOWLEDGED;
+      updatedAt = now;
     }
+  }
+
+  public void changeStatus(AlertStatus next, Instant now) {
+    this.status = next;
+    this.updatedAt = now;
+  }
+
+  public boolean isActive() {
+    return status != AlertStatus.CLOSED;
+  }
+
+  public String getCreatedBy() {
+    return createdBy;
+  }
+
+  public Instant getUpdatedAt() {
+    return updatedAt;
   }
 
   public UUID getId() {
