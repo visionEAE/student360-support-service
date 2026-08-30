@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: support-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:student360}
+    username: ${SUPPORT_DB_USER:support_user}
+    password: ${SUPPORT_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate            # Flyway owns the schema; Hibernate only checks it matches
+    properties:
+      hibernate:
+        default_schema: support
+  flyway:
+    schemas: support                # this service migrates its own schema and nothing else
+    default-schema: support
+    locations: classpath:db/migration
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 1000
+            read-timeout: 3000      # a slow source must not hold a wellbeing entry hostage
+
+server:
+  port: ${PORT:8084}                # PORT is the Cloud Run contract
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+student360:
+  service-name: support-service     # also the audience every inbound service token must carry
+  security:
+    service-token:
+      secret: ${SERVICE_TOKEN_SECRET}
+      protected-paths: ["/api/**"]
+  outbox:
+    table: support.outbox_event
+  clients:
+    core-service:
+      url: ${CORE_SERVICE_URL:http://localhost:8082}
+    lms-service:
+      url: ${LMS_SERVICE_URL:http://localhost:8083}
+  support:
+    pseudonym-secret: ${PSEUDONYM_SECRET}
+    rule:
+      low-wellbeing-level: 2        # entries at or below this level are "low"
+      max-days-since-access: 14     # beyond this the student counts as disengaged
+      min-on-time-rate: 0.6         # below this the student counts as disengaged
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
