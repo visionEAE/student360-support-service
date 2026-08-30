@@ -1,6 +1,8 @@
 spring:
   application:
     name: support-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:student360}
     username: ${SUPPORT_DB_USER:support_user}
