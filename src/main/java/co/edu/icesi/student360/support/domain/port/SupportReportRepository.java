@@ -9,4 +9,6 @@ public interface SupportReportRepository {
   SupportReport save(SupportReport report);
 
   List<SupportReport> findByAlertIdOrderByCreatedAtDesc(UUID alertId);
+
+  List<SupportReport> findByAdvisorReferenceOrderByCreatedAtDesc(String advisorReference);
 }
