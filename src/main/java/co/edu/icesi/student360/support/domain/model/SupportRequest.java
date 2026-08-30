@@ -9,31 +9,33 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Suggested by the rule or created by an advisor; the advisor decides its status. */
+/** What the support team asks of another office on behalf of a student. */
 @Entity
-@Table(name = "intervention_plan", schema = "support")
-public class InterventionPlan {
+@Table(name = "support_request", schema = "support")
+public class SupportRequest {
 
   @Id private UUID id;
-
-  @Column(name = "alert_id")
-  private UUID alertId;
 
   @Column(name = "student_reference", nullable = false)
   private String studentReference;
 
+  @Column(name = "alert_id")
+  private UUID alertId;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private InterventionType type;
+  private RequestType type;
 
   @Column(nullable = false)
   private String description;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private PlanStatus status;
+  private RequestStatus status;
 
-  @Column(name = "created_by")
+  @Column private String resolution;
+
+  @Column(name = "created_by", nullable = false)
   private String createdBy;
 
   @Column(name = "created_at", nullable = false)
@@ -42,40 +44,33 @@ public class InterventionPlan {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  protected InterventionPlan() {}
+  protected SupportRequest() {}
 
-  public static InterventionPlan propose(
-      UUID alertId,
-      String studentReference,
-      InterventionType type,
-      String description,
-      Instant now) {
-    InterventionPlan plan = new InterventionPlan();
-    plan.id = UUID.randomUUID();
-    plan.alertId = alertId;
-    plan.studentReference = studentReference;
-    plan.type = type;
-    plan.description = description;
-    plan.status = PlanStatus.PROPOSED;
-    plan.createdAt = now;
-    plan.updatedAt = now;
-    return plan;
-  }
-
-  public static InterventionPlan createdBy(
+  public static SupportRequest open(
       String advisorReference,
-      UUID alertId,
       String studentReference,
-      InterventionType type,
+      UUID alertId,
+      RequestType type,
       String description,
       Instant now) {
-    InterventionPlan plan = propose(alertId, studentReference, type, description, now);
-    plan.createdBy = advisorReference;
-    return plan;
+    SupportRequest request = new SupportRequest();
+    request.id = UUID.randomUUID();
+    request.studentReference = studentReference;
+    request.alertId = alertId;
+    request.type = type;
+    request.description = description;
+    request.status = RequestStatus.OPEN;
+    request.createdBy = advisorReference;
+    request.createdAt = now;
+    request.updatedAt = now;
+    return request;
   }
 
-  public void changeStatus(PlanStatus next, Instant now) {
+  public void changeStatus(RequestStatus next, String resolution, Instant now) {
     this.status = next;
+    if (resolution != null) {
+      this.resolution = resolution;
+    }
     this.updatedAt = now;
   }
 
@@ -83,15 +78,15 @@ public class InterventionPlan {
     return id;
   }
 
-  public UUID getAlertId() {
-    return alertId;
-  }
-
   public String getStudentReference() {
     return studentReference;
   }
 
-  public InterventionType getType() {
+  public UUID getAlertId() {
+    return alertId;
+  }
+
+  public RequestType getType() {
     return type;
   }
 
@@ -99,8 +94,12 @@ public class InterventionPlan {
     return description;
   }
 
-  public PlanStatus getStatus() {
+  public RequestStatus getStatus() {
     return status;
+  }
+
+  public String getResolution() {
+    return resolution;
   }
 
   public String getCreatedBy() {
