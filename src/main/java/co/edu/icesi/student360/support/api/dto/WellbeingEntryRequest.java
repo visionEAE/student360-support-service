@@ -1,9 +1,10 @@
 package co.edu.icesi.student360.support.api.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import co.edu.icesi.student360.support.domain.model.EntryStatus;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import java.util.List;
 
 public record WellbeingEntryRequest(
-    @NotNull @Min(1) @Max(5) Integer level, @Size(max = 2000) String comment) {}
+    @NotNull EntryStatus status, @NotEmpty @Valid List<DimensionInputRequest> dimensions) {}
