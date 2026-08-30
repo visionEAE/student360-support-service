@@ -1,6 +1,6 @@
 package co.edu.icesi.student360.support.infrastructure.client;
 
-import co.edu.icesi.student360.support.domain.model.EngagementSnapshot;
+import co.edu.icesi.student360.support.domain.model.source.EngagementSignals;
 import co.edu.icesi.student360.support.domain.port.LmsServiceClient;
 import co.edu.icesi.student360.support.domain.port.SourceUnavailableException;
 import feign.FeignException;
@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class FeignLmsServiceClient implements LmsServiceClient {
 
+  static final String SOURCE = "lms-service";
+
   private final LmsServiceFeignClient feign;
 
   public FeignLmsServiceClient(LmsServiceFeignClient feign) {
@@ -16,15 +18,11 @@ public class FeignLmsServiceClient implements LmsServiceClient {
   }
 
   @Override
-  public EngagementSnapshot fetchEngagementSignals(String studentReference) {
+  public EngagementSignals fetchEngagementSignals(String studentReference) {
     try {
-      LmsServiceFeignClient.SignalsResponse response = feign.signals(studentReference);
-      return new EngagementSnapshot(
-          response.daysSinceLastAccess(),
-          response.onTimeSubmissionRate(),
-          response.coursesWithoutActivity());
+      return feign.signals(studentReference);
     } catch (FeignException exception) {
-      throw new SourceUnavailableException("lms-service", exception);
+      throw new SourceUnavailableException(SOURCE, exception);
     }
   }
 }

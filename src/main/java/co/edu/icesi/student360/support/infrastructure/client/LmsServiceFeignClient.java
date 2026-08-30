@@ -1,6 +1,6 @@
 package co.edu.icesi.student360.support.infrastructure.client;
 
-import java.math.BigDecimal;
+import co.edu.icesi.student360.support.domain.model.source.EngagementSignals;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,12 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface LmsServiceFeignClient {
 
   @GetMapping("/api/lms/students/{id}/signals")
-  SignalsResponse signals(@PathVariable("id") String studentReference);
-
-  record SignalsResponse(
-      Integer daysSinceLastAccess,
-      BigDecimal onTimeSubmissionRate,
-      Integer coursesWithoutActivity) {}
+  EngagementSignals signals(@PathVariable("id") String studentReference);
 
   class Configuration {
     @org.springframework.context.annotation.Bean
